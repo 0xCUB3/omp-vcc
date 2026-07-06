@@ -2,7 +2,7 @@
  * Baseline vs (1) context-drop + (2) causal-breadcrumbs comparison test.
  *
  * Produces concrete deterministic metrics for three configurations:
- *   BASELINE — current pi-vcc as-is
+ *   BASELINE — current omp-vcc as-is
  *   V2       — causal turn summaries + causal breadcrumbs
  *
  * Both run identical message sequences through 20 compactions.
@@ -515,7 +515,7 @@ describe("baseline vs v2 comparison", () => {
 
     // Print comparison table
     console.log("\n╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗");
-    console.log("║  BASELINE — 20 COMPACTIONS (current pi-vcc)                                                                                     ║");
+    console.log("║  BASELINE — 20 COMPACTIONS (current omp-vcc)                                                                                     ║");
     console.log("╠═══════╦═════════╦════════╦═══════════╦═══════════╦═══════════╦═══════════╦════════════╦════════════╦════════════╣");
     console.log("║ Round ║ Chars   ║ Lines  ║ Sections  ║ Breadcrumbs║ Goals    ║ Files     ║ Goal Rec  ║ Linkage   ║ Causal    ║");
     console.log("║       ║         ║        ║           ║           ║ Direct   ║ Known     ║ Rate      ║ Rate      ║ Rate      ║");

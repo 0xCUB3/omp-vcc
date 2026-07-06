@@ -47,7 +47,7 @@ const resolveCompactionMessageRange = (
     }
   }
 
-  // Collect pi-vcc compaction entries in order
+  // Collect omp-vcc compaction entries in order
   const compactions = entries.filter(
     (e: any) => e.type === "compaction" && e.details?.compactor === "omp-vcc",
   );

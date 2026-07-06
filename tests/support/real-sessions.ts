@@ -33,7 +33,7 @@ const pickLargest = async (limit: number): Promise<string[]> => {
 
 export const prepareSessionSamples = async (limit = 2): Promise<SessionSample[]> => {
   const selected = await pickLargest(limit);
-  const dir = await mkdtemp(join(tmpdir(), "pi-vcc-sessions-"));
+  const dir = await mkdtemp(join(tmpdir(), "omp-vcc-sessions-"));
   await mkdir(dir, { recursive: true });
   const samples: SessionSample[] = [];
   for (const source of selected) {

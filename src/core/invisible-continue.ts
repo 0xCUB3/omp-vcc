@@ -20,7 +20,7 @@ let _continueInProgress = false;
 // Used by the continue() monkey-patch to detect when triggerInvisibleContinue
 // just ran (so it shouldn't fall back to prompt([]) again — the agent
 // already continued). This prevents double continuation when both
-// pi-retry and pi-vcc are installed.
+// pi-retry and omp-vcc are installed.
 let _lastInvisibleContinueTime = 0;
 
 // Monkey-patch Agent.prototype.subscribe to capture the live instance.
@@ -100,7 +100,7 @@ Agent.prototype.continue = function (this: Agent): Promise<void> {
         // Guard: if triggerInvisibleContinue() just completed (within the
         // last 500ms), the agent already continued — skip the fallback to
         // avoid double continuation. This happens when both pi-retry and
-        // pi-vcc are installed: pi-retry's triggerInvisibleContinue runs
+        // omp-vcc are installed: pi-retry's triggerInvisibleContinue runs
         // first, then the session's continue() wrapper unblocks and would
         // fall back to prompt([]) again.
         if (!_continueInProgress && Date.now() - _lastInvisibleContinueTime > 500) {

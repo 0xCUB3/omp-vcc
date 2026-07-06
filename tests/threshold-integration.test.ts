@@ -21,7 +21,7 @@ let tmpDir: string;
 let CONFIG_PATH: string;
 
 beforeAll(() => {
-  tmpDir = mkdtempSync(join(tmpdir(), "pi-vcc-test-"));
+  tmpDir = mkdtempSync(join(tmpdir(), "omp-vcc-test-"));
   CONFIG_PATH = join(tmpDir, "omp-vcc-config.json");
   process.env.OMP_VCC_CONFIG_PATH = CONFIG_PATH;
 });
@@ -195,7 +195,7 @@ describe("integration: proactive trigger + before-compact", () => {
     expect(result?.compaction).toBeDefined();
   });
 
-  test("explicit /pi-vcc proceeds regardless of context level", () => {
+  test("explicit /omp-vcc proceeds regardless of context level", () => {
     setConfig({
       debug: false,
       overrideDefaultCompaction: true,
@@ -253,7 +253,7 @@ describe("integration: proactive trigger + before-compact with overrideDefaultCo
       msg("m4", "assistant", "done"),
     ];
     const result = emit("session_before_compact", makeBeforeCompactEvent(entries, undefined, 110000));
-    // pi-vcc doesn't handle it (overrideDefaultCompaction: false) → returns undefined
+    // omp-vcc doesn't handle it (overrideDefaultCompaction: false) → returns undefined
     expect(result).toBeUndefined();
   });
 
@@ -279,7 +279,7 @@ describe("integration: proactive trigger + before-compact with overrideDefaultCo
       msg("m2", "assistant", "hi"),
     ];
     const result = emit("session_before_compact", makeBeforeCompactEvent(entries, undefined, 80000));
-    // No longer cancelled — returns undefined (pi-vcc doesn't handle it,
+    // No longer cancelled — returns undefined (omp-vcc doesn't handle it,
     // but doesn't block it either)
     expect(result).toBeUndefined();
   });

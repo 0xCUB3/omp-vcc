@@ -53,9 +53,9 @@ The `messageRange` field in compaction details stores entry IDs `[firstSummarize
 
 ### 2e. Metadata Footer → Compaction Details
 
-Every compaction stores a structured `PiVccCompactionDetails` object in the compaction entry's `details` field:
+Every compaction stores a structured `OmpVccCompactionDetails` object in the compaction entry's `details` field:
 
-- `compactor: "pi-vcc"`, `version`, `sections[]`, `sourceMessageCount`, `previousSummaryUsed`, `messageRange`, `compressionRatio`, `timestamp`, `tokensBefore`, `keptCount`, `keptTokensEst`
+- `compactor: "omp-vcc"`, `version`, `sections[]`, `sourceMessageCount`, `previousSummaryUsed`, `messageRange`, `compressionRatio`, `timestamp`, `tokensBefore`, `keptCount`, `keptTokensEst`
 
 **What's novel:** Upstream stores an empty `{}` in compaction details. This metadata is what enables compaction-scoped recall, debugging, and future tooling.
 
@@ -155,7 +155,7 @@ Supports **9 languages**: TypeScript, Rust, Go, Python, Java, C/C++, Ruby, Elixi
 
 Breadcrumbs are **preserved across compactions** — when `mergeHeaderSection` runs, it separately tracks breadcrumb lines (`- ...recall: ...`) and content lines, never re-capping breadcrumbs. They accumulate across compactions as a lossy index of what was summarized away.
 
-**What's novel:** This is a compaction-native index structure. Other tools lose information when it scrolls off — pi-vcc keeps a compressed, searchable pointer. The agent can `vcc_recall` with any breadcrumb term to retrieve the full original context.
+**What's novel:** This is a compaction-native index structure. Other tools lose information when it scrolls off — omp-vcc keeps a compressed, searchable pointer. The agent can `vcc_recall` with any breadcrumb term to retrieve the full original context.
 
 ---
 
@@ -189,7 +189,7 @@ The fix has 3 layers:
 
 - **`continue()` fallback:** Monkey-patches `Agent.prototype.continue()` so that when it throws "Cannot continue from message role: assistant" (common after compaction rebuilds), it falls back to `prompt([])` instead of letting the session loop die. Includes:
   - Stop-reason check: only continues for mid-task (toolUse, length), not clean stops or user aborts
-  - Double-continuation guard (RC7): checks `_lastInvisibleContinueTime` timestamp so pi-retry and pi-vcc don't both fire `prompt([])`
+  - Double-continuation guard (RC7): checks `_lastInvisibleContinueTime` timestamp so pi-retry and omp-vcc don't both fire `prompt([])`
 
 **What's novel:** Upstream has no mechanism for resuming after compaction — the agent simply stops and the user must type something to continue. This is the first automatic "invisible" resume that doesn't inject any message into the conversation (unlike upstream's follow-up-prompt feature which adds a user message).
 
@@ -300,7 +300,7 @@ The fix has 3 layers:
 - **`.npmignore`** — excluded test files, fixtures, benchmarks, and source maps from the npm package, shrinking it from 16.3 MB to 87 KB (188× reduction)
 - **Audit findings resolved**
 
-**What's novel:** Not a feature per se, but the package-size fix is the difference between "can't install pi-vcc in an air-gapped environment" and "installs instantly."
+**What's novel:** Not a feature per se, but the package-size fix is the difference between "can't install omp-vcc in an air-gapped environment" and "installs instantly."
 
 ---
 
@@ -308,11 +308,11 @@ The fix has 3 layers:
 
 **File:** `src/core/settings.ts`
 
-`overrideDefaultCompaction: true` is now the default. This means pi-vcc handles *all* compactions (manual `/compact`, auto-threshold, overflow) unless the user explicitly opts out. Previously this was opt-in.
+`overrideDefaultCompaction: true` is now the default. This means omp-vcc handles *all* compactions (manual `/compact`, auto-threshold, overflow) unless the user explicitly opts out. Previously this was opt-in.
 
-The `session_before_compact` handler uses the `PI_VCC_COMPACT_INSTRUCTION` marker to distinguish explicit `/pi-vcc` invocations from regular compactions, and only processes regular compactions when `overrideDefaultCompaction` is enabled.
+The `session_before_compact` handler uses the `OMP_VCC_COMPACT_INSTRUCTION` marker to distinguish explicit `/omp-vcc` invocations from regular compactions, and only processes regular compactions when `overrideDefaultCompaction` is enabled.
 
-**What's novel:** Upstream's default compaction is an LLM-in-the-loop summarizer. By defaulting to override, pi-vcc replaces the LLM summarizer with its deterministic, structured approach — zero LLM tokens spent on summarization, zero latency from an LLM call, and guaranteed section structure.
+**What's novel:** Upstream's default compaction is an LLM-in-the-loop summarizer. By defaulting to override, omp-vcc replaces the LLM summarizer with its deterministic, structured approach — zero LLM tokens spent on summarization, zero latency from an LLM call, and guaranteed section structure.
 
 ---
 

@@ -24,7 +24,7 @@ describe("countOmpVccCompactions", () => {
     expect(countOmpVccCompactions([])).toBe(0);
   });
 
-  test("counts only pi-vcc compactions, ignoring messages and other compactors", () => {
+  test("counts only omp-vcc compactions, ignoring messages and other compactors", () => {
     const entries = [
       message("m1"),
       compaction("c1"),

@@ -75,7 +75,7 @@ const register = () => {
 };
 
 const makeAusSession = () => {
-  const dir = mkdtempSync(join(tmpdir(), "pi-vcc-aus-gov-"));
+  const dir = mkdtempSync(join(tmpdir(), "omp-vcc-aus-gov-"));
   const file = join(dir, "session.jsonl");
   const lines = ausMessages.map((msg, i) =>
     JSON.stringify({ type: "message", id: `m${i}`, message: msg })

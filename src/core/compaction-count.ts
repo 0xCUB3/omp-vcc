@@ -1,5 +1,5 @@
 /**
- * Count pi-vcc compactions in the session.
+ * Count omp-vcc compactions in the session.
  *
  * Compaction entries are persisted to the session file as
  * `{ type: "compaction", details: { compactor: "omp-vcc", ... } }`.
@@ -26,7 +26,7 @@ interface SessionManagerLike {
   getEntries?: () => any[];
 }
 
-/** Total pi-vcc compactions in the session (includes the just-completed one). */
+/** Total omp-vcc compactions in the session (includes the just-completed one). */
 export const countOmpVccCompactions = (entries: any[]): number => {
   let total = 0;
   for (const e of entries) {

@@ -9,7 +9,7 @@ let CONFIG_PATH: string;
 const DEBUG_PATH = "/tmp/omp-vcc-debug.json";
 
 beforeAll(() => {
-  tmpDir = mkdtempSync(join(tmpdir(), "pi-vcc-test-"));
+  tmpDir = mkdtempSync(join(tmpdir(), "omp-vcc-test-"));
   CONFIG_PATH = join(tmpDir, "omp-vcc-config.json");
   process.env.OMP_VCC_CONFIG_PATH = CONFIG_PATH;
 });
@@ -76,7 +76,7 @@ describe("registerBeforeCompactHook: cancel paths", () => {
     if (existsSync(DEBUG_PATH)) unlinkSync(DEBUG_PATH);
   });
 
-  test("/pi-vcc with too few live messages cancels and notifies warning", () => {
+  test("/omp-vcc with too few live messages cancels and notifies warning", () => {
     setConfig({ debug: false, overrideDefaultCompaction: false });
     const { pi, invoke, notifyCalls } = createMockPi();
     registerBeforeCompactHook(pi);
@@ -88,7 +88,7 @@ describe("registerBeforeCompactHook: cancel paths", () => {
     expect(notifyCalls[0].msg).toContain("Too few messages");
   });
 
-  test("/pi-vcc with no user message compacts all instead of cancelling", () => {
+  test("/omp-vcc with no user message compacts all instead of cancelling", () => {
     setConfig({ debug: false, overrideDefaultCompaction: false });
     const { pi, invoke, notifyCalls } = createMockPi();
     registerBeforeCompactHook(pi);

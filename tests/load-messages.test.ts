@@ -6,7 +6,7 @@ import { loadAllMessages } from "../src/core/load-messages";
 
 describe("loadAllMessages", () => {
   it("loads all message entries when no lineage filter is provided", () => {
-    const dir = mkdtempSync(join(tmpdir(), "pi-vcc-load-all-"));
+    const dir = mkdtempSync(join(tmpdir(), "omp-vcc-load-all-"));
     const file = join(dir, "session.jsonl");
     try {
       const lines = [
@@ -28,7 +28,7 @@ describe("loadAllMessages", () => {
   });
 
   it("filters messages by allowed lineage entry IDs and preserves original message index", () => {
-    const dir = mkdtempSync(join(tmpdir(), "pi-vcc-load-filter-"));
+    const dir = mkdtempSync(join(tmpdir(), "omp-vcc-load-filter-"));
     const file = join(dir, "session.jsonl");
     try {
       const lines = [

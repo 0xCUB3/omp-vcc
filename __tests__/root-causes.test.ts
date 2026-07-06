@@ -12,7 +12,7 @@
  *
  *   RC2: After overflow compaction with willRetry=true, the error message
  *        removal in _runAutoCompaction checks lastMsg.stopReason === "error",
- *        but pi-vcc's buildOwnCut may produce a kept tail whose last message
+ *        but omp-vcc's buildOwnCut may produce a kept tail whose last message
  *        is NOT an error — it's a different assistant message (e.g., stopReason:
  *        "stop" or "toolUse"). The removal doesn't trigger, continue() sees
  *        an assistant last message, throws.
@@ -23,12 +23,12 @@
  *        to call continue() or prompt() (e.g., pre-prompt check or retry),
  *        it gets "Agent is already processing".
  *
- *   RC4: Both pi-retry and pi-vcc fire triggerInvisibleContinue() for the
+ *   RC4: Both pi-retry and omp-vcc fire triggerInvisibleContinue() for the
  *        same compaction event. Their separate _continueInProgress mutexes
  *        don't cross-gate, so both attempt prompt([]). The second one
  *        gets "Agent is already processing" (caught, but wasteful).
  *        More critically: if the session's continue() wrapper is waiting on
- *        pi-vcc's mutex while pi-vcc's prompt([]) is running, the continue()
+ *        omp-vcc's mutex while omp-vcc's prompt([]) is running, the continue()
  *        eventually resumes and calls the original continue() which throws
  *        because the last message after prompt([]) is an assistant message.
  *
@@ -211,11 +211,11 @@ describe("RC2: overflow compaction error removal", () => {
    * or "toolUse"), it stays. continue() would throw.
    *
    * Scenario: Session has [u1, a1(stop), u2, a2(error)].
-   * pi-vcc cuts at u2 → kept tail: [u2, a2(error)].
+   * omp-vcc cuts at u2 → kept tail: [u2, a2(error)].
    * The error message IS the last → removal works → continue() OK.
    *
    * But what if: Session has [u1, a1(error), u2, a2(stop)].
-   * pi-vcc cuts at u2 → kept tail: [u2, a2(stop)].
+   * omp-vcc cuts at u2 → kept tail: [u2, a2(stop)].
    * The last message is a2(stop), NOT an error → NO removal → continue() THROWS.
    */
   it("error removal only triggers for stopReason=error at tail", () => {
@@ -325,7 +325,7 @@ describe("RC6: manual compact should not auto-continue", () => {
    * The session_compact event doesn't distinguish manual vs auto.
    * We need to track whether the compaction was user-initiated.
    *
-   * Currently, lastCompactWasOmpVcc tracks /pi-vcc command, but
+   * Currently, lastCompactWasOmpVcc tracks /omp-vcc command, but
    * /compact is NOT tracked separately.
    */
   it("session_compact event does not carry reason (manual/overflow/threshold)", () => {
@@ -527,7 +527,7 @@ describe("continue() monkey-patch: catch vs convert", () => {
    *   PROBLEM: the agent doesn't actually continue. The while loop
    *   exits. The task is left incomplete.
    *
-   * NEW BEHAVIOR (pi-vcc):
+   * NEW BEHAVIOR (omp-vcc):
    *   continue() catches the error and FALLS BACK to prompt([])
    *   when the last assistant stopReason is NOT "stop" or "aborted".
    *   This actually starts the agent loop, so the agent continues
@@ -636,7 +636,7 @@ describe("continue() monkey-patch: catch vs convert", () => {
     );
 
     const lastMsg = context[context.length - 1];
-    // pi-vcc should NOT fire invisible continue for errors.
+    // omp-vcc should NOT fire invisible continue for errors.
     // pi-retry already fires triggerInvisibleContinue from its agent_end handler.
     // Both firing would race prompt([]) → wasted or duplicate runs.
     const piVccShouldFire = lastMsg.stopReason !== "stop"
@@ -656,7 +656,7 @@ describe("RC3: pre-prompt compaction race with triggerInvisibleContinue", () => 
    * compaction, the flow in session.prompt() is:
    *
    *   1. _checkCompaction() → compaction runs
-   *   2. session_compact fires → pi-vcc calls triggerInvisibleContinue()
+   *   2. session_compact fires → omp-vcc calls triggerInvisibleContinue()
    *   3. _checkCompaction returns false
    *   4. Session builds user message
    *   5. Session calls _runAgentPrompt(messages) → agent.prompt(messages)
@@ -739,21 +739,21 @@ describe("RC3: pre-prompt compaction race with triggerInvisibleContinue", () => 
 });
 
 // ---------------------------------------------------------------------------
-// RC4: Dual trigger from pi-retry + pi-vcc
+// RC4: Dual trigger from pi-retry + omp-vcc
 // ---------------------------------------------------------------------------
 
 describe("RC4: both extensions fire for same compaction", () => {
   /**
    * When an overflow error triggers compaction:
    * - pi-retry sees agent_end with stopReason: "error" → fires triggerInvisibleContinue()
-   * - pi-vcc sees session_compact with last assistant stopReason: "error"
+   * - omp-vcc sees session_compact with last assistant stopReason: "error"
    *
-   * With the fix: pi-vcc now SKIPS invisible continue for stopReason "error",
+   * With the fix: omp-vcc now SKIPS invisible continue for stopReason "error",
    * so only pi-retry fires. No duplicate run, no race.
    */
-  it("pi-vcc defers to pi-retry for error retries (session_compact)", () => {
+  it("omp-vcc defers to pi-retry for error retries (session_compact)", () => {
     const lastAssistantStopReason = "error";
-    // Fixed: for stopReason "error", pi-vcc's session_compact handler returns early
+    // Fixed: for stopReason "error", omp-vcc's session_compact handler returns early
     // and does NOT call triggerInvisibleContinue
     const piVccShouldFireFromSessionCompact = lastAssistantStopReason !== "stop"
       && lastAssistantStopReason !== "aborted"
@@ -762,20 +762,20 @@ describe("RC4: both extensions fire for same compaction", () => {
   });
 
   /**
-   * But pi-vcc's continue() monkey-patch STILL needs to handle the case
+   * But omp-vcc's continue() monkey-patch STILL needs to handle the case
    * where pi-retry is also installed. The continue() patch chain:
-   * pi-vcc → pi-retry → original
+   * omp-vcc → pi-retry → original
    *
-   * If pi-retry is driving (its _continueInProgress is true), pi-vcc's
+   * If pi-retry is driving (its _continueInProgress is true), omp-vcc's
    * patch passes through (its own mutex is false). pi-retry's patch
    * waits on its mutex. This is correct.
    */
-  it("pi-vcc continue() patch chains correctly with pi-retry", () => {
-    // The chain is: pi-vcc → pi-retry → original
-    // If pi-retry is driving, its mutex blocks, not pi-vcc's
+  it("omp-vcc continue() patch chains correctly with pi-retry", () => {
+    // The chain is: omp-vcc → pi-retry → original
+    // If pi-retry is driving, its mutex blocks, not omp-vcc's
     const piVccMutex = false;
     const piRetryMutex = true;
-    // Session's continue() enters pi-vcc's wrapper → mutex not set → passes through
+    // Session's continue() enters omp-vcc's wrapper → mutex not set → passes through
     // Enters pi-retry's wrapper → mutex set → waits
     expect(piVccMutex).toBe(false);
     expect(piRetryMutex).toBe(true);
@@ -788,7 +788,7 @@ describe("RC4: both extensions fire for same compaction", () => {
 
 describe("RC7: continue() fallback races triggerInvisibleContinue", () => {
   /**
-   * GAP: When both pi-retry and pi-vcc are installed, overflow compaction
+   * GAP: When both pi-retry and omp-vcc are installed, overflow compaction
    * creates a race:
    *
    * 1. pi-retry's agent_end handler fires triggerInvisibleContinue()

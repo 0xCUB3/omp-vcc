@@ -74,7 +74,7 @@ const register = () => {
 };
 
 const makeGovSession = () => {
-  const dir = mkdtempSync(join(tmpdir(), "pi-vcc-gov-"));
+  const dir = mkdtempSync(join(tmpdir(), "omp-vcc-gov-"));
   const file = join(dir, "session.jsonl");
   const lines = govMessages.map((msg, i) =>
     JSON.stringify({ type: "message", id: `m${i}`, message: msg })
@@ -323,7 +323,7 @@ describe("government domain: vcc_recall integration", () => {
 
   it("no-query browse returns last 25 entries, not the whole session", async () => {
     // Build a 60-entry session
-    const dir = mkdtempSync(join(tmpdir(), "pi-vcc-gov-browse-"));
+    const dir = mkdtempSync(join(tmpdir(), "omp-vcc-gov-browse-"));
     const file = join(dir, "session.jsonl");
     const entries = Array.from({ length: 60 }, (_, i) =>
       JSON.stringify({

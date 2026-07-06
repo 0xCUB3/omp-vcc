@@ -47,7 +47,7 @@ export interface ModelThreshold {
    * Recent tokens to keep (not summarized) when pi-core handles compaction.
    *
    * Only affects pi-core's default compaction (when overrideDefaultCompaction
-   * is false). Pi-vcc's own buildOwnCut uses task-boundary heuristics instead
+   * is false). omp-vcc's own buildOwnCut uses task-boundary heuristics instead
    * of token budgets, so this value is advisory/forward-compat for now.
    */
   keepRecentTokens?: number;
@@ -55,13 +55,13 @@ export interface ModelThreshold {
 
 export interface OmpVccSettings {
   /**
-   * When true, pi-vcc handles ALL compactions:
+   * When true, omp-vcc handles ALL compactions:
    *   - /compact (no args)
    *   - /compact <text>
    *   - auto threshold / overflow
-   *   - /pi-vcc (always handled regardless)
+   *   - /omp-vcc (always handled regardless)
    *
-   * When false, pi-vcc only handles /pi-vcc; everything else
+   * When false, omp-vcc only handles /omp-vcc; everything else
    * falls back to pi core's default LLM-based compaction.
    */
   overrideDefaultCompaction: boolean;
@@ -193,7 +193,7 @@ export function loadSettings(): OmpVccSettings {
 }
 
 /**
- * Ensure the pi-vcc config file (default ~/.pi/agent/pi-vcc-config.json) exists with default keys.
+ * Ensure the omp-vcc config file (default ~/.omp/agent/omp-vcc-config.json) exists with default keys.
  * - File missing → create with full default block.
  * - File exists but invalid JSON → no-op (don't clobber user file).
  * - File exists and valid → fill in missing default keys, preserve existing values.

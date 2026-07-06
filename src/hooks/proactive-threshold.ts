@@ -61,7 +61,7 @@ const checkAndTrigger = (ctx: { model?: any; getContextUsage?: () => any; compac
   try {
     const pct = Math.round((usage.tokens / contextWindow) * 100);
     ctx?.ui?.notify?.(
-      `pi-vcc: [${source}] Context at ${pct}% exceeds threshold (${formatTokens(effectiveThreshold)} tok). Compacting...`,
+      `omp-vcc: [${source}] Context at ${pct}% exceeds threshold (${formatTokens(effectiveThreshold)} tok). Compacting...`,
       "info",
     );
   } catch {}

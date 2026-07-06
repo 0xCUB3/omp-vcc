@@ -323,7 +323,7 @@ export function buildOwnCut(branchEntries: any[], options?: { maxKeptTokens?: nu
   // part (typically a giant tool result) is summarized and only recent cycles
   // that fit are kept. If a single cycle is itself oversized (or there are no
   // completed cycles to split at), fall back to compact-all — safe because
-  // pi-vcc compiles summaries statically (no LLM call that could overflow).
+  // omp-vcc compiles summaries statically (no LLM call that could overflow).
   if (cutIdx > 0 && maxKeptTokens > 0) {
     const suffix = liveMessages.slice(cutIdx);
     let suffixTokens = 0;
@@ -383,8 +383,8 @@ export function buildOwnCut(branchEntries: any[], options?: { maxKeptTokens?: nu
 }
 
 const REASON_MESSAGES: Record<OwnCutCancelReason, string> = {
-  no_live_messages: "pi-vcc: Nothing to compact (no live messages)",
-  too_few_live_messages: "pi-vcc: Too few messages to compact",
+  no_live_messages: "omp-vcc: Nothing to compact (no live messages)",
+  too_few_live_messages: "omp-vcc: Too few messages to compact",
 };
 
 export const registerBeforeCompactHook = (pi: ExtensionAPI) => {
@@ -410,7 +410,7 @@ export const registerBeforeCompactHook = (pi: ExtensionAPI) => {
     // an explicit user action (/compact).
     const isOmpVcc = customInstructions === OMP_VCC_COMPACT_INSTRUCTION;
 
-    // Always handle explicit /pi-vcc marker.
+    // Always handle explicit /omp-vcc marker.
     // Otherwise, only handle when user opted in via settings.
     if (!isOmpVcc && !settings.overrideDefaultCompaction) return;
 
@@ -584,11 +584,11 @@ export const registerBeforeCompactHook = (pi: ExtensionAPI) => {
     lastCompactWasOmpVcc = isOmpVcc;
     lastCompactHandledByVcc = true;
 
-    // Signal to neuralwatt-mcr that pi-vcc is handling compaction
+    // Signal to neuralwatt-mcr that omp-vcc is handling compaction
     // so it doesn't cancel the event. Without this flag, neuralwatt-mcr
-    // returns { cancel: true } for MCR models and pi-vcc's summary is
+    // returns { cancel: true } for MCR models and omp-vcc's summary is
     // discarded by the runner's short-circuit.
-    (event as any)._piVccOverriding = true;
+    (event as any)._ompVccOverriding = true;
 
     return {
       compaction: {
@@ -608,12 +608,12 @@ export const registerBeforeCompactHook = (pi: ExtensionAPI) => {
   // that isn't a clean end_turn), the agent was interrupted and should
   // continue.
   pi.on("session_compact", (event, ctx) => {
-    // Only act when pi-vcc drove the compaction
+    // Only act when omp-vcc drove the compaction
     if (!lastCompactHandledByVcc) return;
     lastCompactHandledByVcc = false;
 
     // Fire success toast for /compact path only (delayed to let UI settle).
-    // /pi-vcc path uses its own onComplete callback in the command handler.
+    // /omp-vcc path uses its own onComplete callback in the command handler.
     if (!lastCompactWasOmpVcc) {
       const stats = lastStats;
       const count = countOmpVccCompactionsFromSession(ctx?.sessionManager as any);
@@ -624,7 +624,7 @@ export const registerBeforeCompactHook = (pi: ExtensionAPI) => {
         setTimeout(() => {
           try {
             ctx?.ui?.notify?.(
-              `pi-vcc: ${stats.summarized} source entries processed; tail kept ${stats.kept} (~${formatTokens(stats.keptTokensEst)} tok).${compactionLabel}`,
+              `omp-vcc: ${stats.summarized} source entries processed; tail kept ${stats.kept} (~${formatTokens(stats.keptTokensEst)} tok).${compactionLabel}`,
               "info",
             );
           } catch {}

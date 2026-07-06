@@ -8,7 +8,7 @@ let tmpDir: string;
 let CONFIG_PATH: string;
 
 beforeAll(() => {
-  tmpDir = mkdtempSync(join(tmpdir(), "pi-vcc-test-"));
+  tmpDir = mkdtempSync(join(tmpdir(), "omp-vcc-test-"));
   CONFIG_PATH = join(tmpDir, "omp-vcc-config.json");
   process.env.OMP_VCC_CONFIG_PATH = CONFIG_PATH;
 });

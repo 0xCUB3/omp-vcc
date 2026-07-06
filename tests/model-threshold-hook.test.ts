@@ -8,7 +8,7 @@ let tmpDir: string;
 let CONFIG_PATH: string;
 
 beforeAll(() => {
-  tmpDir = mkdtempSync(join(tmpdir(), "pi-vcc-test-"));
+  tmpDir = mkdtempSync(join(tmpdir(), "omp-vcc-test-"));
   CONFIG_PATH = join(tmpDir, "omp-vcc-config.json");
   process.env.OMP_VCC_CONFIG_PATH = CONFIG_PATH;
 });
@@ -213,7 +213,7 @@ describe("session_before_compact: per-model threshold", () => {
     expect(result.compaction).toBeDefined();
   });
 
-  test("does NOT cancel on /pi-vcc even when below threshold", () => {
+  test("does NOT cancel on /omp-vcc even when below threshold", () => {
     setConfig({
       debug: false,
       overrideDefaultCompaction: true,
@@ -228,7 +228,7 @@ describe("session_before_compact: per-model threshold", () => {
     });
     registerBeforeCompactHook(pi);
 
-    // Below threshold, but explicit /pi-vcc command
+    // Below threshold, but explicit /omp-vcc command
     const entries = [
       msg("m1", "user", "hello"),
       msg("m2", "assistant", "hi"),
@@ -298,14 +298,14 @@ describe("session_before_compact: per-model threshold", () => {
     });
     registerBeforeCompactHook(pi);
 
-    // Below threshold, overrideDefaultCompaction: false → pi-vcc doesn't
+    // Below threshold, overrideDefaultCompaction: false → omp-vcc doesn't
     // handle the summary, but also doesn't cancel (threshold guard removed)
     const entries = [
       msg("m1", "user", "hello"),
       msg("m2", "assistant", "hi"),
     ];
     const result = emit("session_before_compact", makeEvent(entries, undefined, 100000));
-    // Not cancelled — returns undefined (pi-vcc doesn't handle it)
+    // Not cancelled — returns undefined (omp-vcc doesn't handle it)
     expect(result).toBeUndefined();
   });
 });
