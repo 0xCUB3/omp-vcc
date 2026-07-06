@@ -12,9 +12,9 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/skula/omp-vcc.git"
+    "url": "git+https://github.com/0xCUB3/omp-vcc.git"
   },
-  "author": "skula",
+  "author": "0xCUB3",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^26.0.0",
